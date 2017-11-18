@@ -74,4 +74,17 @@ These are:
 2. `snp_stats_combined.csv` - as above but for each site on chr15 called using all methods
 3. `snp_data.txt` - the randomly sampled data used to set `GATK` filters.
 
+# Accessing scripts and data
 
+To get the scripts and data on the repo, just do the following:
+
+```
+git clone https://github.com/markravinet/CEES_workshop_2017
+```
+
+If you have already done this, you can update your local copy of the repo with the following:
+
+```
+git pull
+
+```
