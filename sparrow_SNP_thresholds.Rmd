@@ -1,0 +1,98 @@
+---
+title: "Sparrow GATK Quality thresholds"
+output:
+  html_document: default
+  pdf_document: default
+date: "15/11/2017"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+
+# read in data
+snps <- read.table("./snp_data.txt", header = F, na.strings = ("."))
+snps <- tbl_df(snps)
+
+# rename columns
+colnames(snps) <- c("an", "ac", "af", "qual", "qd", "dp", "fs",
+                    "mq", "bsqr", "readPosRS") 
+
+```
+
+# GATK annotations
+The final step of GATK allows you to apply hard filters to the dataset - however the default filters may not be sufficient for your dataset - so you need to check them.
+
+Here we have 40,635 biallelic SNPs randomly drawn from chr15 to approximate the genome-wide distribution.
+
+## Allele count
+
+This is simply the number of alleles in genotypes for the ALT allele
+
+```{r, echo = FALSE,, message = FALSE, warning = F}
+# allele count
+a <- ggplot(snps, aes(ac)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```
+
+
+## Allele frequency for the ALT allele 
+
+This is the frequency of the alternative allele.
+
+
+```{r, echo = FALSE,, message = FALSE, warning = F}
+# allele count
+a <- ggplot(snps, aes(af)) + geom_density(fill = "dodgerblue1", alpha = 0.3)
+a + theme_light()
+```
+
+
+## QualbyDepth - QD
+
+QD is variant confidence (QUAL) divided by unfiltered depth of **non-hom ref** samples - i.e. it is quality normalised by depth. Default recommendation is to remove all variants < 2 - this is indicated on the figure below.
+
+```{r, echo = FALSE,, message = FALSE, warning = F}
+# QD
+a <- ggplot(snps, aes(qd)) + geom_density(fill = "dodgerblue1", alpha = 0.3)
+a + theme_light() + geom_vline(lty = 2, xintercept = 2)
+```
+
+Our distribution is bimodal. We might expect two peaks because of a difference in homozygous versus heterozygous non-ref hets. **GATK suggests a QD filter of >2 but 5 would be applicable here**
+
+## Fisher Strand Bias
+
+This is the Phred-scaled probability of strand bias - i.e. a non-ref allele is associated with either the forward or reverse read than the reference. The higher this value, the more likely there is bias.
+
+```{r, echo = FALSE, message = FALSE, warning = F}
+# FS
+a <- ggplot(snps, aes(fs)) + geom_density(fill = "dodgerblue1", alpha = 0.3)
+a + theme_light() + xlim(0, 30)
+```
+
+Few alleles seem to have bias, so we can set this to about **10**
+
+## Mapping quality
+
+RSM of MQ at all reads at a site. Rather than a mean, this incorporates the distribution. Good MQ will be around 60. The default is marked here, at 40.
+
+```{r, echo = FALSE, message = FALSE, warning = F}
+# MQ
+a <- ggplot(snps, aes(mq)) + geom_density(fill = "dodgerblue1", alpha = 0.3) 
+a + theme_light() + xlim(0, 100) + geom_vline(lty = 2, xintercept = 40)
+```
+
+Although we could raise this to 50, it seems fine to **keep the default**.
+
+## ReadPosRankSum - Ranks sum of read position
+
+This is similar to the last test - but instead of mapping qualities, it tests the difference in read position between alternate and reference alleles. Negative values suggest the alternate allele is found at the end of a read more than the reference, and positive is the opposite. The default is -8.
+
+```{r, echo = FALSE, message = FALSE, warning = F}
+# ReadPosRankSum
+a <- ggplot(snps, aes(readPosRS)) + geom_density(fill = "dodgerblue1", alpha = 0.3)
+a + theme_light()
+```
+
+
