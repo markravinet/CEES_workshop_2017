@@ -12,8 +12,5 @@ bcftools query -l $VCF | grep "spanish" > spanish
 
 vcftools --gzvcf $VCF \
 --fst-window-size $WINDOW --fst-window-step $STEP \
-<<<<<<< HEAD
 --weir-fst-pop house --weir-fst-pop spanish --out house_spanish
-=======
---weir-fst-pop house --weir-fst-pop spanish --out house spanish
->>>>>>> origin/master
+
